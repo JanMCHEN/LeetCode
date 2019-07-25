@@ -620,29 +620,63 @@ class Solution(object):
     def getSkyline(self, buildings: List[List[int]]) -> List[List[int]]:
         """
         #218 天际线问题
+        思路：按顺序扫描建筑点坐标，并以左端点进队右端点出队维持一个建筑对整个天际线的影响，每次新增的均为建筑轮廓顶点坐标
         :param buildings:
         :return:
         """
+        import heapq
+
         if not buildings:
-            return buildings
-        b_start, b_end, b_high = buildings[0]
-        ret = [[b_start, b_high]]
-        for i in range(1, len(buildings)):
-            build = buildings[i]
-            if build[0] < b_end:
-                if build[2] > b_high:
-                    b_start, b_end, b_high = build
-                    ret.append([b_start, b_high])
-                elif build[2] < b_high and build[1] > b_end:
-                    ret.append([b_end, build[2]])
-                    b_high = build[2]
-                    b_end = build[1]
+            return []
+        points = []
+        heap = []
+        ret = []
+        max_high = - float('inf')
+
+        # 将建筑以坐标（x，h）的形式存起来并按x排序，其中为了区分左端点与右端点高度为正负值
+        for build in buildings:
+            points.append([build[0], build[2]])
+            points.append([build[1], - build[2]])
+        points.sort(key=lambda x: x[0])
+
+        # 遍历点坐标
+        for i, point in enumerate(points):
+            # 为左端点时
+            if point[1] > 0:
+
+                # 构建堆，每次能获得负最小值，即最大值
+                heapq.heappush(heap, -point[1])
+
+                if point[1] > max_high:
+                    max_high = point[1]
+
+                    # 与前一个保存的天际线左端点相同时更新高度值
+                    if i > 0 and ret[-1][0] == point[0] and points[i - 1][1] > 0:
+                        ret[-1][-1] = max_high
+
+                    # 否则当高度不同时新增天际线点
+                    elif not ret or ret[-1][-1] != max_high:
+                        ret.append([point[0], max_high])
+
+            # 为右端点时
             else:
-                if build[0] > b_end:
-                    ret.append([b_end, 0])
-                b_start, b_end, b_high = build
-                ret.append([b_start, b_high])
-        ret.append([buildings[-1][1], 0])
+                # 取出该点
+                heap.remove(point[1])
+                # 重新调整堆
+                heapq.heapify(heap)
+
+                # 高度较小则直接跳过
+                if -point[1] < max_high:
+                    continue
+
+                # 判断堆是否为空
+                if heap:
+                    max_high = -heap[0]
+                else:
+                    max_high = 0
+                # 当与下一个坐标不重合并且高度不相等时新增
+                if i == len(points) - 1 or (points[i + 1][0] != point[0] and -point[1] != max_high):
+                    ret.append([point[0], max_high])
         return ret
 
 
@@ -731,6 +765,7 @@ if __name__ == '__main__':
 
     # print(s.swimInWater(grid))
     # print(s.pancakeSort([93,19,91,20,82,12,18,5,57,14,37,36,32,99,100,33,22,58,83,75,49,70,60,63,15,31,88,21,35,66,89,64,69,95,50,41,52,30,56,47,1,17,77,13,26,39,53,98,81,48,8,46,45,3,55,84,51,24,42,34,25,38,96,71,27,80,85,40,28,6,59,86,65,73,29,10,94,61,2,4,7,90,43,54,87,23,97,9,62,44,68,78,72,11,74,79,67,76,92,16]))
-    node = ListNode(node_list=[3, 4, 2, 1, 9, 8, 6, 9])
-    node.show()
-    s.insertionSortList(node).show()
+    # node = ListNode(node_list=[3, 4, 2, 1, 9, 8, 6, 9])
+    # node.show()
+    # s.insertionSortList(node).show()
+    print(s.getSkyline([[0,2,3],[2,5,3]]))
