@@ -11,8 +11,10 @@ class TreeNode:
         self.right = None
 
 
-# Definition for singly-linked list.
 class ListNode:
+    """
+    单向链表
+    """
     def __init__(self, x=0, node_list=[]):
         if node_list:
             self.val = node_list[0]
@@ -33,9 +35,106 @@ class ListNode:
         print(node_list)
 
 
+class LFUCache:
+    """
+    设计并实现最不经常使用（LFU）缓存的数据结构。它应该支持以下操作：get 和 put。
+    get(key) - 如果键存在于缓存中，则获取键的值（总是正数），否则返回 -1。
+    put(key, value) - 如果键不存在，请设置或插入值。当缓存达到其容量时，它应该在插入新项目之前，使最不经常使用的项目无效。
+    在此问题中，当存在平局（即两个或更多个键具有相同使用频率）时，最近最少使用的键将被去除。
+    """
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = {}
+        self.freq_key = {}
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+
+        # 找出当前key的频率并加1
+        for freq in self.freq_key:
+            if key in self.freq_key[freq]:
+                self.freq_key[freq].remove(key)
+                if not self.freq_key[freq]:
+                    self.freq_key.pop(freq)
+                self.freq_key.setdefault(freq + 1, []).append(key)
+                break
+
+        return self.cache.get(key)
+
+    def put(self, key: int, value: int) -> None:
+        if self.capacity <= 0:
+            return
+        if key not in self.cache:
+            if len(self.cache) == self.capacity:
+                # 弹出频率最小的第一个元素，并移除
+                pop_key = self.freq_key[min(self.freq_key)].pop(0)
+                self.cache.pop(pop_key)
+
+            self.cache[key] = value
+            self.freq_key.setdefault(1, []).append(key)
+        else:
+            self.cache[key] = value
+            self.get(key)
+
+
+class Trie:
+    """
+    前缀树，用于单词查找
+    """
+    def __init__(self):
+        """
+        Initialize your data structure here.
+        """
+        self.tree = {}
+        self.is_a_word = '$'
+
+    def insert(self, word: str) -> None:
+        """
+        Inserts a word into the trie.
+        """
+        node = self.tree
+        for char in word:
+            node = node.setdefault(char, {})
+        node[self.is_a_word] = self.is_a_word
+
+    def search(self, word: str) -> bool:
+        """
+        Returns if the word is in the trie.
+        """
+        if self.tree == {}:
+            return False
+        search_node = self.tree
+        for w in word:
+            if w in search_node:
+                search_node = search_node[w]
+            else:
+                return False
+        if self.is_a_word in search_node:
+            return True
+        return False
+
+    def startsWith(self, prefix: str) -> bool:
+        """
+        Returns if there is any word in the trie that starts with the given prefix.
+        """
+        if self.tree == {}:
+            return False
+        start_node = self.tree
+        for pre in prefix:
+            if pre in start_node:
+                start_node = start_node[pre]
+            else:
+                return False
+        return True
+
+
 class Solution(object):
+    """
+    各种算法实现
+    """
     def twoSum(self, nums: List[int], target: int) -> List[int]:
-        """给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。
+        """#1 给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。
         你可以假设每种输入只会对应一个答案。但是，你不能重复利用这个数组中同样的元素。
         思路：利用字典保存值和索引，遍历数组，每次发现目标值不在字典里则继续寻找后面的并添加进字典里"""
         nums_dict = {}
@@ -49,7 +148,7 @@ class Solution(object):
         return ret
 
     def threeSum(self, nums: List[int]) -> List[List[int]]:
-        """给定一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？找出所有满足条件且不重复的三元组。
+        """#15 给定一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？找出所有满足条件且不重复的三元组。
         注意：答案中不可以包含重复的三元组。
         思路: 从两数之和得到启发，把-c看成是target，遍历排序之后的数组，每次弹出一个c，再遍历剩余的数组找到所有符合条件的，复杂度为O(n2)"""
         if len(nums) < 3:
@@ -87,7 +186,7 @@ class Solution(object):
 
     def findWords(self, board, words):
         """
-        给定一个二维网格 board 和一个字典中的单词列表 words，找出所有同时在二维网格和字典中出现的单词。
+        #212 给定一个二维网格 board 和一个字典中的单词列表 words，找出所有同时在二维网格和字典中出现的单词。
         单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中不允许被重复使用。
         :type board: List[List[str]]
         :type words: List[str]
@@ -156,7 +255,7 @@ class Solution(object):
                 if forward:
                     if (cur + 1) % step != 0:
                         location.append(cur + 1)
-                    if cur + step < len(board_set):
+                    if (cur + step) < len(board_set):
                         location.append(cur + step)
                 else:
                     if cur % step != 0:
@@ -192,7 +291,7 @@ class Solution(object):
 
     def longestMountain(self, A: List[int]) -> int:
         """
-        给出一个整数数组 A，返回最长 “山脉” 的长度。
+        #845 给出一个整数数组 A，返回最长 “山脉” 的长度。
         :param A:
         :return:
         """
@@ -243,7 +342,7 @@ class Solution(object):
 
     def mergeTrees(self, t1: TreeNode, t2: TreeNode) -> TreeNode:
         """
-        合并两个二叉树
+        #617 合并两个二叉树
         给定两个二叉树，想象当你将它们中的一个覆盖到另一个上时，两个二叉树的一些节点便会重叠。
         你需要将他们合并为一个新的二叉树。合并的规则是如果两个节点重叠，那么将他们的值相加作为节点合并后的新值，
         否则不为 NULL 的节点将直接作为新二叉树的节点。
@@ -259,7 +358,7 @@ class Solution(object):
         return t1
 
     def longestCommonPrefix(self, strs: List[str]) -> str:
-        """最长公共前缀"""
+        """#14 最长公共前缀"""
         if not strs:
             return ''
         if len(strs) == 1:
@@ -273,7 +372,7 @@ class Solution(object):
         return strs[0]
 
     def findDisappearedNumbers(self, nums: List[int]) -> List[int]:
-        """给定一个范围在  1 ≤ a[i] ≤ n ( n = 数组大小 ) 的 整型数组，数组中的元素一些出现了两次，另一些只出现一次。
+        """#448 给定一个范围在  1 ≤ a[i] ≤ n ( n = 数组大小 ) 的 整型数组，数组中的元素一些出现了两次，另一些只出现一次。
             找到所有在 [1, n] 范围之间没有出现在数组中的数字。"""
         # 利用集合去重
         return list({i for i in range(1, len(nums) + 1)} - set(nums))
@@ -287,7 +386,7 @@ class Solution(object):
         # return [index+1 for index, i in enumerate(nums) if i > 0]
 
     def removeDuplicates(self, nums: List[int], n=2) -> int:
-        """给定一个排序数组，你需要在原地删除重复出现的元素，使得每个元素最多出现n次，返回移除后数组的新长度。
+        """#80 给定一个排序数组，你需要在原地删除重复出现的元素，使得每个元素最多出现n次，返回移除后数组的新长度。
             不要使用额外的数组空间，你必须在原地修改输入数组并在使用 O(1) 额外空间的条件下完成。"""
         # 方法1简单粗暴， 只要当前元素和它之前2个元素相等，就认为元素是重复了2次以上，则不交换
         i = 0
@@ -321,14 +420,14 @@ class Solution(object):
 
     def searchMatrix(self, matrix, target):
         """
+        #240 搜索 m x n 矩阵 matrix 中的一个目标值 target。该矩阵具有以下特性：
+        1.每行的元素从左到右升序排列。
+        2.每列的元素从上到下升序排列。
+        思路：每次查询中间位置，比较之后可以较小约1/4，直到矩阵元素内容为空
         :type matrix: List[List[int]]
         :type target: int
         :rtype: bool
         """
-        """搜索 m x n 矩阵 matrix 中的一个目标值 target。该矩阵具有以下特性：
-        1.每行的元素从左到右升序排列。
-        2.每列的元素从上到下升序排列。
-        思路：每次查询中间位置，比较之后可以较小约1/4，直到矩阵元素内容为空"""
         if not matrix or not matrix[0]:
             return False
         column_mid = (len(matrix[0]) - 1) // 2
@@ -343,7 +442,8 @@ class Solution(object):
             return True
 
     def nthUglyNumber(self, n: int) -> int:
-        """找出第 n 个丑数。
+        """
+        #313 找出第 n 个丑数。
         丑数就是只包含质因数 2, 3, 5 的正整数。1也为丑数"""
         # 定义3个指针，分别指代当前位置乘 2，3，5操作
         # 每个位置都应该乘一遍2，3，5
@@ -361,7 +461,7 @@ class Solution(object):
         return ret[-1]
 
     def swimInWater(self, grid: List[List[int]]) -> int:
-        """在一个 N x N 的坐标方格 grid 中，每一个方格的值 grid[i][j] 表示在位置 (i,j) 的平台高度。
+        """#778 在一个 N x N 的坐标方格 grid 中，每一个方格的值 grid[i][j] 表示在位置 (i,j) 的平台高度。
         现在开始下雨了。当时间为 t 时，此时雨水导致水池中任意位置的水位为 t 。你可以从一个平台游向四周相邻的任意一个平台，但是前提是此时水位必须同时淹没这两个平台。假定你可以瞬间移动无限距离，也就是默认在方格内部游动是不耗时的。当然，在你游泳的时候你必须待在坐标方格里面。
         你从坐标方格的左上平台 (0，0) 出发。最少耗时多久你才能到达坐标方格的右下平台 (N-1, N-1)？
         思路：t逐渐增大，直到能走到末尾，才返回这个t；判断能否走到末尾时每次把周围小于等于t的位置压入栈中，直到栈中的元素在末尾则表示走到尾了"""
@@ -518,6 +618,11 @@ class Solution(object):
         return ret
 
     def getSkyline(self, buildings: List[List[int]]) -> List[List[int]]:
+        """
+        #218 天际线问题
+        :param buildings:
+        :return:
+        """
         if not buildings:
             return buildings
         b_start, b_end, b_high = buildings[0]
@@ -539,100 +644,6 @@ class Solution(object):
                 ret.append([b_start, b_high])
         ret.append([buildings[-1][1], 0])
         return ret
-
-
-class LFUCache:
-    """
-    设计并实现最不经常使用（LFU）缓存的数据结构。它应该支持以下操作：get 和 put。
-    get(key) - 如果键存在于缓存中，则获取键的值（总是正数），否则返回 -1。
-    put(key, value) - 如果键不存在，请设置或插入值。当缓存达到其容量时，它应该在插入新项目之前，使最不经常使用的项目无效。
-    在此问题中，当存在平局（即两个或更多个键具有相同使用频率）时，最近最少使用的键将被去除。
-    """
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.cache = {}
-        self.freq_key = {}
-
-    def get(self, key: int) -> int:
-        if key not in self.cache:
-            return -1
-
-        # 找出当前key的频率并加1
-        for freq in self.freq_key:
-            if key in self.freq_key[freq]:
-                self.freq_key[freq].remove(key)
-                if not self.freq_key[freq]:
-                    self.freq_key.pop(freq)
-                self.freq_key.setdefault(freq + 1, []).append(key)
-                break
-
-        return self.cache.get(key)
-
-    def put(self, key: int, value: int) -> None:
-        if self.capacity <= 0:
-            return
-        if key not in self.cache:
-            if len(self.cache) == self.capacity:
-                # 弹出频率最小的第一个元素，并移除
-                pop_key = self.freq_key[min(self.freq_key)].pop(0)
-                self.cache.pop(pop_key)
-
-            self.cache[key] = value
-            self.freq_key.setdefault(1, []).append(key)
-        else:
-            self.cache[key] = value
-            self.get(key)
-
-
-class Trie:
-    """
-    前缀树，用于单词查找
-    """
-    def __init__(self):
-        """
-        Initialize your data structure here.
-        """
-        self.tree = {}
-        self.is_a_word = '$'
-
-    def insert(self, word: str) -> None:
-        """
-        Inserts a word into the trie.
-        """
-        node = self.tree
-        for char in word:
-            node = node.setdefault(char, {})
-        node[self.is_a_word] = self.is_a_word
-
-    def search(self, word: str) -> bool:
-        """
-        Returns if the word is in the trie.
-        """
-        if self.tree == {}:
-            return False
-        search_node = self.tree
-        for w in word:
-            if w in search_node:
-                search_node = search_node[w]
-            else:
-                return False
-        if self.is_a_word in search_node:
-            return True
-        return False
-
-    def startsWith(self, prefix: str) -> bool:
-        """
-        Returns if there is any word in the trie that starts with the given prefix.
-        """
-        if self.tree == {}:
-            return False
-        start_node = self.tree
-        for pre in prefix:
-            if pre in start_node:
-                start_node = start_node[pre]
-            else:
-                return False
-        return True
 
 
 def remove_duplicates(nums: List[int]) -> int:
@@ -667,6 +678,13 @@ def remove_duplicates3(nums: List[int]) -> int:
 
 
 def complex_test(range_num=100, count_num=1000, funcs=None):
+    """
+    多次运行测试
+    :param range_num:
+    :param count_num:
+    :param funcs:
+    :return:
+    """
     if not funcs:
         return
     array = [randint(0, range_num) for _ in range(count_num)]
