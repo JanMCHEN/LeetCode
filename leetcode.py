@@ -679,6 +679,52 @@ class Solution(object):
                     ret.append([point[0], max_high])
         return ret
 
+    def minimumTotal(self, triangle: List[List[int]]) -> int:
+        """
+        #120 三角形最短路径之和
+        动态规划
+        :param triangle: 三角形数组
+        :return: 最短路径
+        """
+        rows = len(triangle)
+        if rows == 0:
+            return 0
+
+        '''
+          方法2：自底向上
+          需开辟O(rows)空间，动态方程：dp[j] = min(dp[j+1], dp[j]) + triangle[i][j];i为层数，j为该层第几个元素
+        '''
+
+        # 需开辟空间
+        # dp = [i for i in triangle[-1]]
+
+        # 原地修改
+        dp = triangle[-1]
+
+        # 自底向上
+        for i in range(rows - 2, -1, -1):
+            for j in range(i + 1):
+                dp[j] = min(dp[j], dp[j + 1]) + triangle[i][j]
+        return dp[0]
+
+        #
+        # # 方法1：需开辟O(n2)空间，自顶向下
+        # # dp[i][j] 表示到从上到下走到i,j位置最小路径的值.
+        # # 动态方程: dp[i][j] = min(dp[i-1][j], dp[i-1][j+1]) + triangle[i][j]
+        #
+        # dp = [[0] * col for col in range(1, rows+1)]
+        # dp[0][0] = triangle[0][0]
+        #
+        # for i in range(1, rows):
+        #     dp[i][0] = dp[i-1][0] + triangle[i][0]
+        #
+        #     for j in range(1, i):
+        #         dp[i][j] = min(dp[i-1][j], dp[i-1][j-1]) + triangle[i][j]
+        #
+        #     dp[i][i] = dp[i-1][i-1] + triangle[i][i]
+        # return min(dp[-1])
+        #
+
 
 def remove_duplicates(nums: List[int]) -> int:
     """找出无序序列中不同元素个数"""
