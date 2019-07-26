@@ -1,7 +1,7 @@
 from typing import List
 from random import randint
 import time
-
+from my_kmp import KMP
 
 class TreeNode:
     """树节点"""
@@ -725,6 +725,198 @@ class Solution(object):
         # return min(dp[-1])
         #
 
+    def convert(self, s: str, numRows: int) -> str:
+        """
+        #6 Z字形变换
+        开辟numRows个字符串分别保存每一行的字符，最后再后并
+        :param s:
+        :param numRows:
+        :return:
+        """
+        if numRows <= 1:
+            return s
+        ret_list = ['' for _ in range(numRows)]
+
+        # Z字形移动方向
+        up = False
+        # 当前移动到哪个字符串
+        cur = 0
+        for i in range(len(s)):
+            ret_list[cur] += s[i]
+            if not up:
+                cur += 1
+                if cur == numRows - 1:
+                    up = True
+            else:
+                cur -= 1
+                if cur == 0:
+                    up = False
+        return ''.join(ret_list)
+
+    def shortestPalindrome(self, s: str) -> str:
+        """
+        #214 最短回文串
+        :param s:
+        :return:
+        """
+        # 方法1：先把原字符串翻转，再拼接直至成回文串，时间复杂度O(n2)
+        # s_reve = s[::-1]
+        # ret = ''
+        # for i in range(len(s)):
+        #     ret = s_reve[:i] + s
+        #     if ret == ret[::-1]:
+        #         break
+        # return ret
+
+        # 方法2：先找到从头开始的最长回文子串，再把剩下的翻转拼接到原串,时间复杂度O(n2)
+        # size = len(s)
+        # if size < 2:
+        #     return s
+        # for i in range(size, 0, -1):
+        #     if s[:i] == s[:i][::-1]:
+        #         break
+        # return s[i:][::-1] + s
+
+        # 方法3 利用KMP算法中的next数组， 时间复杂度O（n）
+        p = s + '#' + s[::-1]
+        max_len = KMP(p).next[-1] + 1
+        return p[-len(s):-max_len] + s
+
+    def longestPalindrome(self, s: str) -> str:
+        """
+        #5 最长回文子串 动态规划
+        :param s:
+        :return:
+        """
+        size = len(s)
+        if size < 2:
+            return s
+
+        # 二维 dp 问题
+        # 状态：dp[l,r]: s[l:r] 包括 l，r ，表示的字符串是不是回文串
+        dp = [[False for _ in range(size)] for _ in range(size)]
+
+        longest_l = 1
+        res = s[0]
+
+        # 因为只有 1 个字符的情况在最开始做了判断
+        # 左边界一定要比右边界小，因此右边界从 1 开始
+        for r in range(1, size):
+            for l in range(r):
+                # 状态转移方程：如果头尾字符相等并且中间也是回文
+                # 在头尾字符相等的前提下，如果收缩以后不构成区间（最多只有 1 个元素），直接返回 True 即可
+                # 否则要继续看收缩以后的区间的回文性
+                # 重点理解 or 的短路性质在这里的作用
+                if s[l] == s[r] and (r - l <= 2 or dp[l + 1][r - 1]):
+                    dp[l][r] = True
+                    cur_len = r - l + 1
+                    if cur_len > longest_l:
+                        longest_l = cur_len
+                        res = s[l:r + 1]
+        return res
+
+    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
+        """
+        #2 两数相加
+        :param l1:
+        :param l2:
+        :return:
+        """
+
+        ret = ListNode(0)
+        tmp = ret
+
+        while True:
+            # 3个相加，tmp.val可以理解为进位
+            val = l1.val + l2.val + tmp.val
+            if val >= 10:
+                val -= 10
+                # 向前进位
+                tmp.next = ListNode(1)
+
+            tmp.val = val
+            l1 = l1.next
+            l2 = l2.next
+
+            if not (l1 or l2):
+                # 两个加数都算完了直接返回结果
+                return ret
+
+            # 否者加数补0
+            if not l1:
+                l1 = ListNode(0)
+            elif not l2:
+                l2 = ListNode(0)
+            if not tmp.next:
+                tmp.next = ListNode(0)
+            tmp = tmp.next
+
+    def trap(self, height: List[int]) -> int:
+        """
+        #42 接雨水 方法多多 各显神通
+        :param height:
+        :return:
+        """
+        if not height:
+            return 0
+        water = 0
+        length = len(height)
+        i = 0
+        while i + 1 < length:
+            val = height[i]
+            if val == 0:
+                i += 1
+                continue
+            tmp = []
+            for j in range(i + 1, length):
+                # 遍历之后的柱高，如果大于之前的高度，则从此刻开始继续寻找
+                if height[j] >= val:
+                    i = j
+                    break
+                # 保存寻找过的位置
+                tmp.append(j)
+                # 到尾了还没找到更高的
+                if j + 1 == length:
+                    # 找到最大值的及其位置
+                    max_one = max([height[i] for i in tmp])
+                    for k in tmp[::-1]:
+                        if height[k] == max_one:
+                            i = k
+                            break
+                        tmp.pop()
+                    val = max_one
+            # 此时最多能容纳这么多水
+            water += val * len(tmp)
+            # 再减去其中方块占的体积
+            for j in tmp:
+                water -= height[j]
+
+        return water
+
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        """
+        #452 用最少数量的箭引爆气球 贪心算法 一次尽可能引爆多气球
+        :param points:
+        :return:
+        """
+        if not points or len(points[0]) == 0:
+            return 0
+        points.sort(key=lambda x: -x[0])
+        ret = 0
+        while points:
+            point = points.pop()
+            ret += 1
+            while points:
+                if points[-1][0] <= point[1]:
+                    # 每找到一个气球在区间内则更新点的左右值
+                    point = [max(point[0], points[-1][0]), min(point[1], points[-1][1])]
+                    # 并删除这个点表示引爆了
+                    points.pop()
+                else:
+                    # 没找到则退出当前循环
+                    break
+        return ret
+
 
 def remove_duplicates(nums: List[int]) -> int:
     """找出无序序列中不同元素个数"""
@@ -814,4 +1006,4 @@ if __name__ == '__main__':
     # node = ListNode(node_list=[3, 4, 2, 1, 9, 8, 6, 9])
     # node.show()
     # s.insertionSortList(node).show()
-    print(s.getSkyline([[0,2,3],[2,5,3]]))
+    print(s.shortestPalindrome(''))
