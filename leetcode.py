@@ -3,6 +3,7 @@ from random import randint
 import time
 from my_kmp import KMP
 
+
 class TreeNode:
     """树节点"""
     def __init__(self, x):
@@ -917,6 +918,83 @@ class Solution(object):
                     break
         return ret
 
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        """
+        # 37 解数独    回溯
+        """
+        from collections import defaultdict
+
+        def put_able(i, j, num):
+            # 判断在（i，j）位置能不能放num
+
+            # 旁边3*3个方块的位置
+            box_i = i // 3 * 3 + j // 3
+
+            # 没有重复的则放置并返回true
+            if rows_dict[i][num] == 0 and cols_dict[j][num] == 0 and box_dict[box_i][num] == 0:
+                # 把每一个区域该num个数加1
+                rows_dict[i][num] += 1
+                cols_dict[j][num] += 1
+                box_dict[box_i][num] += 1
+                board[i][j] = str(num)
+                return True
+
+            # 否则无法放置返回false
+            board[i][j] = '.'
+            return False
+
+        def back_do():
+            # 回溯
+            # print(stack)
+
+            # 弹出上一个确定好的位置并将该位置所在区域对应数值个数减1
+            i, j, num = stack.pop()
+            box_i = i // 3 * 3 + j // 3
+            rows_dict[i][num] -= 1
+            cols_dict[j][num] -= 1
+            box_dict[box_i][num] -= 1
+            board[i][j] = '.'
+
+            # 继续迭代至9
+            for n in range(num + 1, 10):
+                if put_able(i, j, n):
+                    stack.append((i, j, n))
+                    return i, j
+
+            # 每找到则继续递归
+            return back_do()
+
+        stack = []
+        row = col = 0
+
+        # 将各个区域对应数字个数维护成一个字典，用列表存储
+        rows_dict = [defaultdict(int) for _ in range(9)]
+        cols_dict = [defaultdict(int) for _ in range(9)]
+        box_dict = [defaultdict(int) for _ in range(9)]
+
+        # 初始化
+        for r in range(9):
+            for c in range(9):
+                if board[r][c] != '.':
+                    d = int(board[r][c])
+                    rows_dict[r][d] += 1
+                    cols_dict[c][d] += 1
+                    box_dict[r//3*3+c//3][d] += 1
+
+        # 循环直到最后一个
+        while True:
+            # print(board)
+            if board[row][col] == '.':
+                stack.append((row, col, 0))
+                row, col = back_do()
+            if row == col == 8:
+                break
+            if col == 8:
+                col = 0
+                row += 1
+            else:
+                col += 1
+
 
 def remove_duplicates(nums: List[int]) -> int:
     """找出无序序列中不同元素个数"""
@@ -1006,4 +1084,8 @@ if __name__ == '__main__':
     # node = ListNode(node_list=[3, 4, 2, 1, 9, 8, 6, 9])
     # node.show()
     # s.insertionSortList(node).show()
-    print(s.shortestPalindrome(''))
+    # print(s.shortestPalindrome(''))
+
+    board = [['.' for _ in range(9)] for _ in range(9)]
+    s.solveSudoku(board)
+    print(board)
