@@ -5,7 +5,7 @@ def select_sort(array):
     """
     选择排序算法  遍历数组每次把最小值交换到前面
     :param array:
-    :return:
+    :return:None
     """
     for index in range(len(array)-1):
         min_index = index
@@ -14,20 +14,20 @@ def select_sort(array):
                 min_index = i
         if index != min_index:
             array[index], array[min_index] = array[min_index], array[index]
-    return array
+    # return None
 
 
 def bubble_sort(array):
     """
     冒泡排序算法  类似冒泡现象 每次把较大值往后移一位
     :param array:
-    :return:
+    :return:None
     """
     for i in range(len(array)-1):
         for j in range(len(array)-1-i):
             if array[j] > array[j+1]:
                 array[j+1], array[j] = array[j], array[j+1]
-    return array
+    # return None
 
 
 def insert(array, gap=1):
@@ -35,7 +35,7 @@ def insert(array, gap=1):
     插入算法    将一个数据插入到已经排好序的有序数据中，从而得到一个新的、个数加一的有序数据，
     :param array: 序列
     :param gap: 步长
-    :return:
+    :return:None
     """
 
     # 相当于原数组分成gap组
@@ -60,7 +60,7 @@ def insert_sort(array):
     :return:
     """
     insert(array)
-    return array
+    # return None
 
 
 def shell_sort(array):
@@ -77,7 +77,7 @@ def shell_sort(array):
     while gap > 0:
         insert(array, gap)
         gap //= 2
-    return array
+    return None
 
 
 def merge(ll, rl=[]):
@@ -106,7 +106,7 @@ def merge_sort(array):
     """
     归并算法 分治法 将每个子序列有序后合并成整个有序序列 总共归并logn次，故时间复杂度为O(nlogn)
     :param array:
-    :return:
+    :return:None
     """
     if len(array) < 2:
         return array
@@ -119,20 +119,20 @@ def merge_sort(array):
 
     # 非递归
     st = 1
-    res = array.copy()
+    res = array
 
     while st < len(array):
         for i in range(0, len(array), 2*st):
             res[i:i+2*st] = merge(res[i:i+st], res[i+st:i+2*st])
         st *= 2
-    return res
+    return None
 
 
 def quick_sort(array):
     """
     快排递归实现     二分法      每次选一个分界点把数组分成两部分
     :param array:
-    :return:
+    :return:array
     """
     if len(array) <= 1:
         return array
@@ -164,7 +164,7 @@ def quick_sort2(array):
     """
     快排非递归实现
     :param array:
-    :return:
+    :return:None
     """
 
     # 先传入整个序列
@@ -198,7 +198,7 @@ def quick_sort2(array):
                     array[i], array[j] = array[j], array[i]
         # 获得位置i之后，继续以i为界构造子序列首尾位置
         stack.extend([low, i - 1, i + 1, high])
-    return array
+    # return None
 
 
 def heap_adjust(array, i, end):
@@ -232,7 +232,7 @@ def heap_sort(array):
     """
     堆排序算法  先把序列调整成大堆，然后每次把堆顶即最大值交换到末尾，再重新调整出去末尾序列成大堆
     :param array:
-    :return: 已排序序列array
+    :return: None
     """
     end = len(array)
     # 获取第一个非叶子节点位置
@@ -249,4 +249,4 @@ def heap_sort(array):
         array[0], array[end] = array[end], array[0]
         heap_adjust(array, 0, end)
 
-    return array
+    return None
