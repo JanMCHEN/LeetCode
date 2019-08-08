@@ -995,6 +995,150 @@ class Solution(object):
             else:
                 col += 1
 
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        """
+        找中位数
+        :param nums1:
+        :param nums2:
+        :return:
+        """
+        m, n = len(nums1), len(nums2)
+        if m > n:
+            return self.findMedianSortedArrays(nums2, nums1)
+
+        lo, ro = 0, m
+        if not m:
+            return nums2[n // 2] if n % 2 else (nums2[n // 2 - 1] + nums2[n // 2]) / 2
+
+        while lo < ro:
+            c1 = (ro + lo) / 2
+            c2 = (m + n) / 2 - c1
+
+            if c2 != int(c2):
+                c2 = int(c2)
+                l_max2, r_min2 = nums2[c2], nums2[c2]
+            else:
+                c2 = int(c2)
+                if c2 == n:
+                    l_max2 = nums2[c2 - 1]
+                    r_min2 = float('inf')
+                elif c2 == 0:
+                    l_max2 = float('-inf')
+                    r_min2 = nums2[c2]
+                else:
+                    l_max2, r_min2 = nums2[c2 - 1], nums2[c2]
+
+            if c1 != int(c1):
+                c1 = int(c1)
+                l_max1, r_min1 = nums1[c1], nums1[c1]
+            else:
+                c1 = int(c1)
+                if c1 == m:
+                    l_max1, r_min1 = nums1[c1 - 1], float('inf')
+                elif c1 == 0:
+                    r_min1, l_max1 = nums1[c1], float('-inf')
+                else:
+                    l_max1, r_min1 = nums1[c1 - 1], nums1[c1]
+
+            if l_max1 <= r_min2 and l_max2 <= r_min1:
+                return (max(l_max1, l_max2) + min(r_min1, r_min2)) / 2
+
+            if l_max1 > r_min2:
+                ro = c1 - 1
+            elif l_max2 > r_min1:
+                lo = c1 + 1
+            print()
+        return (max(l_max1, l_max2) + min(r_min1, r_min2)) / 2
+
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        """
+        #322 零钱兑换 动态规划dp[a] = min(dp[a-ci]) + 1,
+        dp[a]为组成a所需要的最少硬币个数，会等于组成a-其中一个硬币所需要的最少硬币+1
+        """
+
+        dp = [float('inf') for _ in range(amount + 1)]
+        dp[0] = 0
+
+        for i in coins:
+            if i <= amount:
+                dp[i] = 1
+
+        for i in range(min(coins) + 1, amount + 1):
+            dp[i] = min([dp[i - c] for c in coins if i - c >= 0]) + 1
+
+        return dp[-1]
+
+    def mincostTickets(self, days: List[int], costs: List[int]) -> int:
+        """
+        #983 最低票价 动态规划
+        # dp[i]表示从第i天到第i天所花费的最小钱
+        #               前一天买了一天的票   前7天买了7天的票    前30天买了30天的票
+        # dp[i] = min([dp[i-1]+costs[0],   dp[i-7]+costs[1],   dp[i-30]+costs[2] ] )
+        """
+        n = days[-1]
+        dp = [0 for i in range(n + 1)]
+
+        for i in days:
+            dp[i] = -1
+
+        for i in range(1, n + 1):
+            if dp[i] != -1:
+                dp[i] = dp[i - 1]
+            else:
+                cost7 = costs[1] if i <= 7 else dp[i - 7] + costs[1]
+                cost30 = costs[2] if i <= 30 else dp[i - 30] + costs[2]
+                dp[i] = min(dp[i - 1] + costs[0], cost7, cost30)
+        return dp[-1]
+
+    def minPathSum(self, grid: List[List[int]]) -> int:
+        """
+        #64 最小路径和 动态规划
+        两种策略：
+        1、构建一个和grid同样大小dp，dp[i][j]表示到i，j位置所需要的最小路径，动态方程：
+                    dpi][j] = grid[i][j] + min(dp[i-1][j],dp[i][j-1])，考虑到每次计算dp[i][j]时都只用到grid[i][j],可以直接把grid当dp用
+        2、仔细想这个计算过程，其实每一个dp[i][j]都只用到同一行前一列和同一列前一行的dp值，故可以构建一个长度为n的数组，每循环一行更新到达每一列所需最短路径，即更新一遍dp值，当循环下一行时
+            此时这一行每一列可以由上一行对应列上和当前行前一列最小值获得，而此时前一列已经更新了，dp也可以dp=grid[0]直接初始化
+        两种策略都要注意下边界情况，第二种其实也可以列循环套行，此时dp长度应该为m用来保存到达每一列时对应的最小路径，复杂度均为O(mn),空间复杂度由于修改gird都可以降至O(1)
+        至于从头开始还是从尾开始，肯定都可以的，因为两个点肯定都是要经过的，从头到尾和从尾到头最短路径肯定是相同的
+        :param grid:
+        :return:
+        """
+        m = len(grid)
+        if not m:
+            return 0
+        n = len(grid[0])
+        if not n:
+            return 0
+
+        # ######## 策略2 ##########
+        # dp = grid[0]
+        # for i in range(m):
+        #     for j in range(n):
+        #         if i == j == 0:
+        #             continue
+        #         if j and i:
+        #             dp[j] = grid[i][j] + min(dp[j], dp[j - 1])
+        #         elif j:
+        #             dp[j] = grid[i][j] + dp[j - 1]
+        #         else:
+        #             dp[j] = grid[i][j] + dp[j]
+        #######################################
+
+        # #######策略1########
+        dp = grid
+        for i in range(m):
+            for j in range(n):
+                if i == j == 0:
+                    continue
+                if j and i:
+                    dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
+                elif j:
+                    dp[i][j] = grid[i][j] + dp[i][j-1]
+                elif i:
+                    dp[i][j] = grid[i][j] + dp[i-1][j]
+
+        return dp[m-1][n-1]
+
 
 def remove_duplicates(nums: List[int]) -> int:
     """找出无序序列中不同元素个数"""
@@ -1086,6 +1230,12 @@ if __name__ == '__main__':
     # s.insertionSortList(node).show()
     # print(s.shortestPalindrome(''))
 
-    board = [['.' for _ in range(9)] for _ in range(9)]
-    s.solveSudoku(board)
-    print(board)
+    # board = [['.' for _ in range(9)] for _ in range(9)]
+    # s.solveSudoku(board)
+    # print(board)
+
+    # print(s.coinChange([1, 2, 3, 4], 11))
+
+    print(s.minPathSum([[1, 3, 1],
+                          [2, 3, 4],
+                          [3, 6, 7]]))
