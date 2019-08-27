@@ -79,57 +79,6 @@ class LFUCache:
             self.get(key)
 
 
-class Trie:
-    """
-    前缀树，用于单词查找
-    """
-    def __init__(self):
-        """
-        Initialize your data structure here.
-        """
-        self.tree = {}
-        self.is_a_word = '$'
-
-    def insert(self, word: str) -> None:
-        """
-        Inserts a word into the trie.
-        """
-        node = self.tree
-        for char in word:
-            node = node.setdefault(char, {})
-        node[self.is_a_word] = self.is_a_word
-
-    def search(self, word: str) -> bool:
-        """
-        Returns if the word is in the trie.
-        """
-        if self.tree == {}:
-            return False
-        search_node = self.tree
-        for w in word:
-            if w in search_node:
-                search_node = search_node[w]
-            else:
-                return False
-        if self.is_a_word in search_node:
-            return True
-        return False
-
-    def startsWith(self, prefix: str) -> bool:
-        """
-        Returns if there is any word in the trie that starts with the given prefix.
-        """
-        if self.tree == {}:
-            return False
-        start_node = self.tree
-        for pre in prefix:
-            if pre in start_node:
-                start_node = start_node[pre]
-            else:
-                return False
-        return True
-
-
 class Solution(object):
     """
     各种算法实现
