@@ -188,6 +188,8 @@ class BTreeNode:
             return
 
         cur = BTreeNode(pre[0], parent=parent)
+
+        # 中序根据父节点位置划分成两部分，左边为左子树，右边为右子树
         for i in range(len(tin)):
             if tin[i] == pre[0]:
                 break
