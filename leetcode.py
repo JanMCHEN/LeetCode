@@ -1165,6 +1165,52 @@ class Solution(object):
             ans //= math.factorial(v)
         return ans
 
+    def makesquare(self, nums: List[int]) -> bool:
+        """
+        # 473火柴拼正方形
+        递归，贪心，深度优先，剪枝
+        4条边假设为4个固定容量的桶，每次尝试把每根火柴放入4个桶， 全部放完则可以组成正方形
+        """
+        # 先排除一些特殊情况
+        suml = sum(nums)
+        if suml % 4 or len(nums) < 4:
+            return False
+        a = suml // 4
+
+        # 先排序可以大大节约回溯的次数
+        nums.sort(reverse=True)
+
+        if a < nums[0]:
+            return False
+
+        def dfs(i, sums):
+            """
+            深度优先遍历
+            :param i: 当前访问的火柴位置
+            :param sums: 当前桶的容量
+            :return:
+            """
+            # 搜索完了即火柴全部放入桶中，成功
+            if i == len(nums):
+                return True
+
+            # 尝试把火柴放入4个桶中
+            for j in range(4):
+
+                # 只有在桶容量足够时才能放入
+                if sums[j] + nums[i] <= a:
+                    if j == 0 or sums[j] != sums[j - 1]:
+                        # 尝试放入并开始放下一根火柴
+                        sums[j] += nums[i]
+                        if dfs(i + 1, sums):
+                            return True
+                        # 放入失败，取出火柴并开始下一个桶
+                        sums[j] -= nums[i]
+            # 4个桶都不能放火柴时即需要回溯，体现在上述过程中的取出操作
+            return False
+        # 初始化桶并从0开始放入
+        return dfs(0, [0, 0, 0, 0])
+
 
 def remove_duplicates(nums: List[int]) -> int:
     """找出无序序列中不同元素个数"""

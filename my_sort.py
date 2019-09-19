@@ -30,7 +30,7 @@ def bubble_sort(array):
     # return None
 
 
-def insert(array, gap=1):
+def _insert(array, gap=1):
     """
     插入算法    将一个数据插入到已经排好序的有序数据中，从而得到一个新的、个数加一的有序数据，
     :param array: 序列
@@ -59,7 +59,7 @@ def insert_sort(array):
     :param array:
     :return:
     """
-    insert(array)
+    _insert(array)
     # return None
 
 
@@ -75,7 +75,7 @@ def shell_sort(array):
     # 步长
     gap = len(array)//2
     while gap > 0:
-        insert(array, gap)
+        _insert(array, gap)
         gap //= 2
     return None
 
@@ -130,22 +130,29 @@ def merge_sort(array):
 
 def quick_sort(array):
     """
-    快排递归实现     二分法      每次选一个分界点把数组分成两部分
+    快排递归实现     分治      每次选一个分界点把数组分成两部分
     :param array:
     :return:array
     """
     if len(array) <= 1:
         return array
 
+    # 基准值
     basic = array[0]
+
+    # 首尾指针
     left = 0
     right = len(array) - 1
+
     while left < right:
+        # 如果右边有较小值则交换到左边，首指针加1
         if array[right] < basic:
             array[left] = array[right]
             left += 1
+
+            # 此时需要找一个较大值去填充右边那个空出来的值
             while left < right:
-                if array[left] > basic:
+                if array[left] >= basic:
                     array[right] = array[left]
                     right -= 1
                     break
@@ -157,7 +164,7 @@ def quick_sort(array):
     return quick_sort(array[0: left]) + [basic] + quick_sort(array[left+1:])
     #     # 一句话快排
     # return quick_sort([item for item in array if item < array[0]]) + array[0:1] +
-    # quick_sort([item for item in array if item>array[0]])
+    # quick_sort([item for item in array[1:] if item >= array[0]])
 
 
 def quick_sort2(array):
@@ -250,3 +257,48 @@ def heap_sort(array):
         heap_adjust(array, 0, end)
 
     return None
+
+
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+
+def insert_sort1(lst):
+    if len(lst) < 2:
+        return lst
+    head = Node(lst[0])
+    for i in lst[1:]:
+        if i < head.val:
+            tmp = head.next
+            head = Node(i)
+            head.next = tmp
+            continue
+        cur = head
+        while True:
+            if cur.next is None:
+                cur.next = Node(i)
+                break
+            if i < cur.next.val:
+                tmp = cur.next
+                cur.next = Node(i)
+                cur.next.next = tmp
+                break
+            cur = cur.next
+    while head is not None:
+        yield head.val
+        head = head.next
+
+
+if __name__ == '__main__':
+    import random
+    import time
+    ls = list(range(10000))
+    random.shuffle(ls)
+    st = time.time()
+    list(insert_sort1(ls))
+    st1 = time.time()
+    insert_sort(ls)
+    st2 = time.time()
+    print(st1-st, st2-st1)

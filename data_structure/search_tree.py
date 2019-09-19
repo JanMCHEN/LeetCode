@@ -17,7 +17,7 @@ class BST(BTreeNode):
             return self.r_child.match(x)
 
     def insert(self, x, types=True):
-        """插入的时候不能破坏这一结构, 时间复杂度为lgh，h为树高度"""
+        """插入的时候不能破坏这一结构, 时间复杂度为O(h)，h为树高度"""
         if types and self.parent is not None:
             # 先找到根节点
             return self.parent.insert(x)
@@ -218,10 +218,10 @@ class AVL(BST):
 
 
 if __name__ == '__main__':
-    lst = list(range(100))
+    lst = list(range(20))
     random.shuffle(lst)
     bst = BST.load_from_list(lst)
     avl = AVL.load_from_list(lst)
     print('bst:', len(bst), repr(bst))
-    print('bst-remove:', bst.remove(50), len(bst), list(travel_in(bst)))
+    print('bst-remove:', bst.remove(10), len(bst), list(travel_in(bst)))
     print('avl:', len(avl), repr(avl))
