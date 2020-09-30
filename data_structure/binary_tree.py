@@ -29,10 +29,8 @@ class BTreeNode:
 
     def __eq__(self, other):
         """==重载"""
-        # other为空时输出False短路
-        if other is None:
-            return False
-        return self.data == other.data and self.l_child == other.l_child and self.r_child == other.r_child
+        return self is other
+        # (self.data == other.data and self.l_child == other.l_child and self.r_child == other.r_child)
 
     def insert(self, x, types=0):
         """
@@ -83,6 +81,40 @@ class BTreeNode:
                 break
         print()
 
+    def morris_in(self):
+        """
+        Morris 遍历算法整体步骤如下（假设当前遍历到的节点为 x）：
+        1.如果 x 无左孩子，则访问 x 的右孩子，即 x =x.right。
+        2.如果 x 有左孩子，则找到 x 左子树上最右的节点（即左子树中序遍历的最后一个节点，x 在中序遍历中的前驱节点），我们记为predecessor。根据 predecessor 的右孩子是否为空，进行如下操作。
+            a.如果 predecessor 的右孩子为空，则将其右孩子指向 x，然后访问 x 的左孩子，即 x = x.left。
+            b.如果 predecessor 的右孩子不为空，则此时其右孩子指向 x，说明我们已经遍历完 x 的左子树，我们将 predecessor 的右孩子置空，然后访问 xx 的右孩子，即 x = x.right。
+        3.重复上述操作，直至访问完整棵树。
+        Morris 遍历算法整体步骤如下（假设当前遍历到的节点为 xx）：
+
+        作者：LeetCode-Solution
+        链接：https://leetcode-cn.com/problems/recover-binary-search-tree/solution/hui-fu-er-cha-sou-suo-shu-by-leetcode-solution/
+        来源：力扣（LeetCode）
+        著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+        """
+        cur = self
+        while cur != None:
+            predecessor = cur.l_child
+
+            while predecessor != None and predecessor.r_child != None and predecessor.r_child != cur:
+                predecessor = predecessor.r_child
+
+            if predecessor == None or predecessor.r_child == cur:
+                print(cur.data, end=' ')
+                if predecessor != None:
+                    predecessor.r_child = None
+                cur = cur.r_child
+
+            else:
+                predecessor.r_child = cur
+                cur = cur.l_child
+
+        print(self)
+                
     def travel_in(self):
         """中序遍历非递归， 和前序遍历类似，只是打印顺序不同
         这次也一样深度优先遍历左子树，至末尾时才开始打印"""
@@ -275,6 +307,8 @@ if __name__ == '__main__':
     print('递归:', list(travel_in(t)))
     print('非递归', end=':')
     t.travel_in()
+    print('morris', end=':')
+    t.morris_in()
     print('后序')
     print('递归:', list(travel_post(t)))
     print('非递归', end=':')
